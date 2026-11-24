@@ -1,0 +1,3 @@
+{
+  "extends": "@mordus-platform/config/tsconfig.base.json"
+}
