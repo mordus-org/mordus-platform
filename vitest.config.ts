@@ -4,7 +4,6 @@ export default defineConfig({
   test: {
     passWithNoTests: true,
     include: [
-      "smoke.test.ts",
       "apps/*/src/**/*.{test,spec}.ts",
       "packages/*/src/**/*.{test,spec}.ts",
     ],

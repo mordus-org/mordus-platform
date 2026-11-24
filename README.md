@@ -1,119 +1,52 @@
-# mordus-platform
+# Mordus Platform
 
-This project was created with [kubojs](https://github.com/albuquerquesz/kubo), a modern TypeScript stack that combines React, TanStack Router, Fastify, and more.
+Monorepo com a aplicação web em `apps/web`, a API Fastify em `apps/server` e os pacotes compartilhados em `packages/`.
 
-## Features
+## Desenvolvimento
 
-- **TypeScript** - For type safety and improved developer experience
-- **TanStack Router** - File-based routing with full type safety
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
-- **Fastify** - Fast, low-overhead web framework
-- **Node.js** - Runtime environment
-- **Drizzle** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
-- **Oxlint** - Oxlint + Oxfmt (linting & formatting)
+Requer Node.js 24 e pnpm 11. Instale dependências e configure o servidor:
 
-## Getting Started
-
-First, install the dependencies:
-
-```bash
+```sh
 pnpm install
+Copy-Item apps/server/.env.example apps/server/.env
+pnpm db:start
+pnpm db:migrate
+pnpm dev
 ```
 
-## Database Setup
+A aplicação web fica em `http://localhost:3001`, a API em `http://localhost:3000` e a verificação de saúde em `/health`. A página Sobre está em `/about`.
 
-This project uses PostgreSQL with Drizzle ORM.
+## Configuração da API
 
-1. Make sure you have a PostgreSQL database set up.
-2. Update your `apps/server/.env` file with your PostgreSQL connection details.
+As variáveis ficam em `apps/server/.env`:
 
-3. Apply the schema to your database:
+- `HOST` e `PORT` definem endereço e porta do servidor.
+- `DATABASE_URL` define a conexão PostgreSQL. A API aplica as migrações pendentes ao iniciar.
+- `ADMIN_TOKEN` protege as rotas administrativas.
+- `COLLECT_RATE_LIMIT` define o limite por IP por minuto para ingestão.
+- `LOG_LEVEL` define o nível dos logs e `LOG_DIR` o diretório dos arquivos de log, relativo à raiz do workspace.
+- `CORS_ORIGIN` define a origem web autorizada em `GET /`. A ingest?o valida as origens cadastradas em cada cole??o.
 
-```bash
-pnpm run db:push
+`DATABASE_URL` pode apontar para um banco novo ou para um banco existente com o schema da API. O Compose local fornece um banco Mordus separado.
+
+## Banco de dados
+
+O schema e as migrações ficam em `packages/db`. Use `pnpm db:generate` após alterar o schema, `pnpm db:migrate` para aplicar migrações e `pnpm db:studio` para abrir o Drizzle Studio. `pnpm db:push` está disponível para desenvolvimento.
+
+## Comandos
+
+- `pnpm dev`, `pnpm dev:web`, `pnpm dev:server` iniciam os aplicativos.
+- `pnpm build` e `pnpm check-types` verificam build e tipos.
+- `pnpm test` executa os testes.
+- `pnpm check` executa lint e formatação.
+- `pnpm docker:build`, `pnpm docker:up`, `pnpm docker:logs`, `pnpm docker:down` gerenciam o Compose.
+
+## Estrutura
+
+```text
+apps/web      Frontend React e TanStack Router
+apps/server   API Fastify
+packages/db   Schema, migrações e acesso PostgreSQL
+packages/env  Validação de variáveis de ambiente
+packages/ui   Componentes e estilos compartilhados
 ```
-
-Then, run the development server:
-
-```bash
-pnpm run dev
-```
-
-Open [http://localhost:3001](http://localhost:3001) in your browser to see the web application.
-The API is running at [http://localhost:3000](http://localhost:3000).
-
-## UI Customization
-
-React web apps in this stack share shadcn/ui primitives through `packages/ui`.
-
-- Change design tokens and global styles in `packages/ui/src/styles/globals.css`
-- Update shared primitives in `packages/ui/src/components/*`
-- Adjust shadcn aliases or style config in `packages/ui/components.json` and `apps/web/components.json`
-
-### Add more shared components
-
-Run this from the project root to add more primitives to the shared UI package:
-
-```bash
-npx shadcn@latest add accordion dialog popover sheet table -c packages/ui
-```
-
-Import shared components like this:
-
-```tsx
-import { Button } from "@mordus-platform/ui/components/button";
-```
-
-### Add app-specific blocks
-
-If you want to add app-specific blocks instead of shared primitives, run the shadcn CLI from `apps/web`.
-
-## Deployment
-
-### Docker Compose
-
-- Target: web + server
-- Config: `docker-compose.yml` (app Dockerfiles live in `apps/*/Dockerfile`)
-- Build images: pnpm run docker:build
-- Start: pnpm run docker:up
-- Logs: pnpm run docker:logs
-- Stop: pnpm run docker:down
-
-Environment variables are read from each app's `.env` file (baked into web builds for public variables) and overridden in `docker-compose.yml` for container networking.
-
-For more details, see the guide on [Deploying with Docker Compose](https://www.kubojs.dev/docs/guides/docker).
-
-## Git Hooks and Formatting
-
-- Run checks: `pnpm run check`
-
-## Project Structure
-
-```
-mordus-platform/
-├── apps/
-│   ├── web/         # Frontend application (React + TanStack Router)
-│   └── server/      # Backend API (Fastify)
-├── packages/
-│   ├── ui/          # Shared shadcn/ui components and styles
-│   └── db/          # Database schema & queries
-```
-
-## Available Scripts
-
-- `pnpm run dev`: Start all applications in development mode
-- `pnpm run build`: Build all applications
-- `pnpm run dev:web`: Start only the web application
-- `pnpm run dev:server`: Start only the server
-- `pnpm run check-types`: Check TypeScript types across all apps
-- `pnpm run db:push`: Push schema changes to database
-- `pnpm run db:generate`: Generate database client/types
-- `pnpm run db:migrate`: Run database migrations
-- `pnpm run db:studio`: Open database studio UI
-- `pnpm run check`: Run Oxlint and Oxfmt
-- `pnpm run docker:build`: Build the Docker Compose images
-- `pnpm run docker:up`: Build and start the Docker Compose stack
-- `pnpm run docker:logs`: Tail logs from the Docker Compose stack
-- `pnpm run docker:down`: Stop the Docker Compose stack

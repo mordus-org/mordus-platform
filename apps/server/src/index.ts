@@ -1,29 +1,28 @@
-import fastifyCors from "@fastify/cors";
-import { env } from "@mordus-platform/env/server";
-import Fastify from "fastify";
+import { fileURLToPath } from "node:url";
 
-const baseCorsConfig = {
-  origin: env.CORS_ORIGIN,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
-  credentials: true,
-  maxAge: 86400,
+import { env } from "@mordus-platform/env/server";
+import { buildApp } from "./app";
+import { loadConfig } from "./config";
+
+const config = loadConfig(env);
+const app = await buildApp(config, undefined, {
+  logBaseDir: fileURLToPath(new URL("../../../", import.meta.url)),
+});
+
+try {
+  await app.listen({ host: config.host, port: config.port });
+} catch (error) {
+  app.log.error(error);
+  await app.close();
+  throw error;
+}
+
+const shutdown = () => {
+  void app.close().catch((error) => {
+    app.log.error(error);
+    process.exitCode = 1;
+  });
 };
 
-const fastify = Fastify({
-  logger: true,
-});
-
-fastify.register(fastifyCors, baseCorsConfig);
-
-fastify.get("/", async () => {
-  return "OK";
-});
-
-fastify.listen({ port: 3000, host: "0.0.0.0" }, (err) => {
-  if (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
-  console.log("Server running on port 3000");
-});
+process.once("SIGINT", shutdown);
+process.once("SIGTERM", shutdown);

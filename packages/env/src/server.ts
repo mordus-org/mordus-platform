@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { createEnv } from "@t3-oss/env-core";
 import { config } from "dotenv";
-import { z } from "zod";
+import { serverSchema } from "./server-schema";
 
 // Load monorepo package env relative to this file (not process.cwd()).
 // Turbo/`bun run` from the workspace root would otherwise miss apps/*/ .env.
@@ -11,12 +11,7 @@ const envFilePath = resolve(dirname(fileURLToPath(import.meta.url)), "../../../a
 config({ path: envFilePath });
 
 export const env = createEnv({
-  server: {
-    DATABASE_URL: z.string().min(1),
-
-    CORS_ORIGIN: z.url(),
-    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  },
+  server: serverSchema,
   runtimeEnv: process.env,
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,

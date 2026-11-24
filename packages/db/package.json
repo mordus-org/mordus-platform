@@ -5,6 +5,9 @@
     ".": {
       "default": "./src/index.ts"
     },
+    "./postgres": {
+      "default": "./src/postgres.ts"
+    },
     "./*": {
       "default": "./src/*.ts"
     }
