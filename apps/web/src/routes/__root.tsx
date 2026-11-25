@@ -39,7 +39,8 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
     links: [
       {
         rel: "icon",
-        href: "/favicon.ico",
+        href: "/mascot/favicon.webp",
+        type: "image/webp",
       },
     ],
   }),
